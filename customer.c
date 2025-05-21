@@ -24,16 +24,12 @@ struct account {
     struct date last_payment;
 };
 
-struct account customer;
-
 // Function prototypes
 void input();
 void writefile();
 void search();
 void output();
 void menu();
-
-FILE *fp;
 
 // Main function
 int main() {
@@ -52,7 +48,12 @@ void menu() {
         printf("3. Search Customer\n");
         printf("4. Exit\n");
         printf("Enter your choice: ");
-        scanf("%d", &choice);
+        
+        if (scanf("%d", &choice) != 1) {
+            printf("Invalid input. Please enter a number.\n");
+            while (getchar() != '\n'); // Clear input buffer
+            continue;
+        }
         getchar(); // to consume newline
 
         switch (choice) {
@@ -76,54 +77,100 @@ void menu() {
 
 // Function to add customer record
 void input() {
-    fp = fopen("billing.txt", "a");
+    FILE *fp = fopen("billing.txt", "ab"); // Use binary mode for consistent behavior
+    if (fp == NULL) {
+        printf("Error opening file!\n");
+        return;
+    }
+
+    struct account customer;
 
     printf("\nEnter Account Number: ");
-    scanf("%d", &customer.account_number);
+    if (scanf("%d", &customer.account_number) != 1) {
+        printf("Invalid account number!\n");
+        fclose(fp);
+        return;
+    }
     getchar();
 
     printf("Enter Name: ");
-    fgets(customer.name, 50, stdin);
-    customer.name[strcspn(customer.name, "\n")] = 0;
+    if (fgets(customer.name, 50, stdin) == NULL) {
+        printf("Error reading name!\n");
+        fclose(fp);
+        return;
+    }
+    customer.name[strcspn(customer.name, "\n")] = '\0';
 
     printf("Enter Address: ");
-    fgets(customer.address, 100, stdin);
-    customer.address[strcspn(customer.address, "\n")] = 0;
+    if (fgets(customer.address, 100, stdin) == NULL) {
+        printf("Error reading address!\n");
+        fclose(fp);
+        return;
+    }
+    customer.address[strcspn(customer.address, "\n")] = '\0';
 
     printf("Enter Phone: ");
-    fgets(customer.phone, 15, stdin);
-    customer.phone[strcspn(customer.phone, "\n")] = 0;
+    if (fgets(customer.phone, 15, stdin) == NULL) {
+        printf("Error reading phone!\n");
+        fclose(fp);
+        return;
+    }
+    customer.phone[strcspn(customer.phone, "\n")] = '\0';
 
     printf("Enter Email: ");
-    fgets(customer.email, 50, stdin);
-    customer.email[strcspn(customer.email, "\n")] = 0;
+    if (fgets(customer.email, 50, stdin) == NULL) {
+        printf("Error reading email!\n");
+        fclose(fp);
+        return;
+    }
+    customer.email[strcspn(customer.email, "\n")] = '\0';
 
     printf("Enter Account Type (e.g., Savings, Current): ");
-    fgets(customer.account_type, 20, stdin);
-    customer.account_type[strcspn(customer.account_type, "\n")] = 0;
+    if (fgets(customer.account_type, 20, stdin) == NULL) {
+        printf("Error reading account type!\n");
+        fclose(fp);
+        return;
+    }
+    customer.account_type[strcspn(customer.account_type, "\n")] = '\0';
 
     printf("Enter Previous Balance: ");
-    scanf("%f", &customer.old_balance);
+    if (scanf("%f", &customer.old_balance) != 1) {
+        printf("Invalid balance amount!\n");
+        fclose(fp);
+        return;
+    }
 
     printf("Enter Payment Amount: ");
-    scanf("%f", &customer.payment);
+    if (scanf("%f", &customer.payment) != 1) {
+        printf("Invalid payment amount!\n");
+        fclose(fp);
+        return;
+    }
 
     customer.new_balance = customer.old_balance - customer.payment;
     customer.total_balance = customer.new_balance;
 
     printf("Enter Last Payment Date (DD MM YYYY): ");
-    scanf("%d %d %d", &customer.last_payment.day, &customer.last_payment.month, &customer.last_payment.year);
+    if (scanf("%d %d %d", &customer.last_payment.day, 
+                         &customer.last_payment.month, 
+                         &customer.last_payment.year) != 3) {
+        printf("Invalid date format!\n");
+        fclose(fp);
+        return;
+    }
 
-    fwrite(&customer, sizeof(customer), 1, fp);
+    if (fwrite(&customer, sizeof(customer), 1, fp) != 1) {
+        printf("Error writing to file!\n");
+    } else {
+        printf("\n✅ Customer record added successfully!\n");
+    }
+
     fclose(fp);
-
-    printf("\n✅ Customer record added successfully!\n");
 }
 
 // Function to display all records
 void output() {
-    fp = fopen("billing.txt", "r");
-
+    FILE *fp = fopen("billing.txt", "rb"); // Use binary mode
     if (fp == NULL) {
         printf("No records found.\n");
         return;
@@ -131,7 +178,11 @@ void output() {
 
     printf("\n===== Customer Records =====\n");
 
-    while (fread(&customer, sizeof(customer), 1, fp)) {
+    struct account customer;
+    int records_found = 0;
+
+    while (fread(&customer, sizeof(customer), 1, fp) == 1) {
+        records_found = 1;
         printf("\nAccount No: %d\n", customer.account_number);
         printf("Name: %s\n", customer.name);
         printf("Address: %s\n", customer.address);
@@ -141,7 +192,14 @@ void output() {
         printf("Old Balance: %.2f\n", customer.old_balance);
         printf("Payment: %.2f\n", customer.payment);
         printf("New Balance: %.2f\n", customer.new_balance);
-        printf("Last Payment Date: %02d-%02d-%04d\n", customer.last_payment.day, customer.last_payment.month, customer.last_payment.year);
+        printf("Last Payment Date: %02d-%02d-%04d\n", 
+               customer.last_payment.day, 
+               customer.last_payment.month, 
+               customer.last_payment.year);
+    }
+
+    if (!records_found) {
+        printf("No customer records found.\n");
     }
 
     fclose(fp);
@@ -151,16 +209,22 @@ void output() {
 void search() {
     int acc_no, found = 0;
 
-    fp = fopen("billing.txt", "r");
+    FILE *fp = fopen("billing.txt", "rb");
     if (fp == NULL) {
         printf("No records found.\n");
         return;
     }
 
     printf("Enter Account Number to search: ");
-    scanf("%d", &acc_no);
+    if (scanf("%d", &acc_no) != 1) {
+        printf("Invalid account number!\n");
+        fclose(fp);
+        return;
+    }
 
-    while (fread(&customer, sizeof(customer), 1, fp)) {
+    struct account customer;
+
+    while (fread(&customer, sizeof(customer), 1, fp) == 1) {
         if (customer.account_number == acc_no) {
             found = 1;
             printf("\n✅ Record Found:\n");
@@ -173,7 +237,10 @@ void search() {
             printf("Old Balance: %.2f\n", customer.old_balance);
             printf("Payment: %.2f\n", customer.payment);
             printf("New Balance: %.2f\n", customer.new_balance);
-            printf("Last Payment Date: %02d-%02d-%04d\n", customer.last_payment.day, customer.last_payment.month, customer.last_payment.year);
+            printf("Last Payment Date: %02d-%02d-%04d\n", 
+                   customer.last_payment.day, 
+                   customer.last_payment.month, 
+                   customer.last_payment.year);
             break;
         }
     }
