@@ -23,7 +23,9 @@ import {
   Target,
   Search as SearchIcon,
   Globe,
-  Database
+  Database,
+  Briefcase,
+  Wallet
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -58,28 +60,28 @@ export default function App() {
 
   if (!isLoggedIn) {
     return (
-      <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center p-6 font-sans">
-        <div className="w-full max-w-[400px]">
-          <div className="mb-8 text-center">
-            <div className="w-12 h-12 bg-indigo-600 rounded-lg flex items-center justify-center mx-auto mb-4 shadow-lg">
-              <Database className="w-6 h-6 text-white" />
+      <div className="min-h-screen bg-[#FDFDFD] flex items-center justify-center p-6 font-sans selection:bg-indigo-50">
+        <div className="w-full max-w-[380px]">
+          <div className="mb-12 text-center">
+            <div className="w-14 h-14 bg-slate-900 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-2xl">
+              <Briefcase className="w-6 h-6 text-white" />
             </div>
-            <h1 className="text-xl font-bold text-slate-900">BillingPro Console</h1>
-            <p className="text-slate-500 text-sm mt-1">Enterprise Asset Management</p>
+            <h1 className="text-2xl font-medium text-slate-900 tracking-tight">BillingPro</h1>
+            <p className="text-slate-400 text-sm mt-2 font-medium tracking-wide">Secure Financial Intelligence</p>
           </div>
-          <div className="bg-white border border-slate-200 rounded-xl p-8 shadow-sm">
+          <div className="bg-white border border-slate-100 rounded-3xl p-10 shadow-[0_20px_50px_rgba(0,0,0,0.04)]">
             <form onSubmit={(e) => {
               e.preventDefault();
               if (e.target.password.value === 'admin123') {
                 setIsLoggedIn(true);
                 localStorage.setItem('billing_auth', 'true');
               }
-            }} className="space-y-6">
-              <div className="space-y-2">
-                <label className="text-xs font-semibold text-slate-600 uppercase tracking-wider">Access Token</label>
-                <input name="password" type="password" required className="w-full border border-slate-200 rounded-lg py-2.5 px-4 text-sm focus:outline-none focus:border-indigo-500 transition-all bg-slate-50/50" placeholder="••••••••" />
+            }} className="space-y-8">
+              <div className="space-y-3">
+                <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-[0.2em] ml-1">Access Key</label>
+                <input name="password" type="password" required className="w-full border border-slate-100 rounded-xl py-3.5 px-5 text-sm focus:outline-none focus:border-slate-300 transition-all bg-slate-50/30" placeholder="••••••••" />
               </div>
-              <button type="submit" className="w-full bg-indigo-600 text-white py-2.5 rounded-lg text-sm font-semibold hover:bg-indigo-700 transition-all">Sign In</button>
+              <button type="submit" className="w-full bg-slate-900 text-white py-4 rounded-xl text-sm font-semibold active:scale-[0.98] transition-all shadow-lg shadow-slate-100">Authenticate</button>
             </form>
           </div>
         </div>
@@ -88,192 +90,215 @@ export default function App() {
   }
 
   return (
-    <div className="flex min-h-screen bg-white text-slate-900 font-sans">
+    <div className="flex min-h-screen bg-[#FDFDFD] text-slate-900 font-sans selection:bg-indigo-50">
       {/* Notifications */}
-      <div className="fixed top-6 right-6 z-[100] space-y-2">
+      <div className="fixed top-8 right-8 z-[100] space-y-3">
         <AnimatePresence>
           {notifications.map(n => (
-            <motion.div key={n.id} initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="px-4 py-3 rounded-lg shadow-lg border border-slate-200 bg-white flex items-center gap-3 min-w-[240px]">
-              <CheckCircle2 className="w-4 h-4 text-indigo-600" />
-              <span className="text-xs font-semibold text-slate-700">{n.message}</span>
+            <motion.div key={n.id} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} className="px-6 py-4 rounded-2xl shadow-2xl border border-slate-50 bg-white/80 backdrop-blur-xl flex items-center gap-4 min-w-[280px]">
+              <div className="w-8 h-8 bg-slate-900 rounded-full flex items-center justify-center">
+                <CheckCircle2 className="w-4 h-4 text-white" />
+              </div>
+              <span className="text-sm font-medium text-slate-800">{n.message}</span>
             </motion.div>
           ))}
         </AnimatePresence>
       </div>
 
-      {/* Professional Sidebar */}
-      <aside className="w-64 bg-slate-50 border-r border-slate-200 flex flex-col z-20">
-        <div className="h-16 flex items-center gap-3 px-6 border-b border-slate-200">
-          <div className="w-7 h-7 bg-indigo-600 rounded flex items-center justify-center">
-            <Globe className="w-4 h-4 text-white" />
+      {/* Classy Sidebar */}
+      <aside className="w-64 bg-white border-r border-slate-50 flex flex-col z-20">
+        <div className="h-24 flex items-center gap-3 px-8">
+          <div className="w-8 h-8 bg-slate-900 rounded-xl flex items-center justify-center shadow-lg">
+            <Wallet className="w-4 h-4 text-white" />
           </div>
-          <h1 className="text-sm font-bold text-slate-900 tracking-tight">BILLINGPRO</h1>
+          <h1 className="text-[16px] font-bold text-slate-900 tracking-tight uppercase">BillingPro</h1>
         </div>
 
-        <nav className="flex-1 p-4 space-y-1">
+        <nav className="flex-1 px-4 space-y-1">
           {[
-            { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-            { id: 'customers', icon: Users, label: 'Customers' },
-            { id: 'invoices', icon: FileText, label: 'Invoices' },
-            { id: 'payments', icon: CreditCard, label: 'Payments' },
-            { id: 'activity', icon: Activity, label: 'Logs' },
+            { id: 'dashboard', icon: LayoutDashboard, label: 'Insights' },
+            { id: 'customers', icon: Users, label: 'Directory' },
+            { id: 'invoices', icon: FileText, label: 'Ledger' },
+            { id: 'payments', icon: CreditCard, label: 'Settlements' },
+            { id: 'activity', icon: Activity, label: 'Records' },
           ].map(item => (
-            <button key={item.id} onClick={() => setActiveTab(item.id)} className={cn("flex items-center gap-3 w-full px-3 py-2 rounded-lg transition-all text-sm font-medium", activeTab === item.id ? "bg-white text-indigo-600 shadow-sm border border-slate-200" : "text-slate-500 hover:text-slate-900 hover:bg-slate-100")}>
-              <item.icon className={cn("w-4 h-4", activeTab === item.id ? "text-indigo-600" : "text-slate-400")} />
+            <button key={item.id} onClick={() => setActiveTab(item.id)} className={cn("flex items-center gap-4 w-full px-4 py-3 rounded-xl transition-all text-[14px] font-medium group", activeTab === item.id ? "bg-slate-50 text-slate-900 shadow-sm border border-slate-100" : "text-slate-400 hover:text-slate-900 hover:bg-slate-50/50")}>
+              <item.icon className={cn("w-4.5 h-4.5 transition-transform group-hover:scale-110", activeTab === item.id ? "text-slate-900" : "text-slate-300")} />
               {item.label}
             </button>
           ))}
         </nav>
 
-        <div className="p-4 border-t border-slate-200">
-          <button onClick={() => setIsLoggedIn(false)} className="flex items-center gap-3 w-full px-3 py-2 text-slate-500 hover:text-red-600 rounded-lg transition-all text-sm font-medium group">
-            <LogOut className="w-4 h-4" /> Sign Out
+        <div className="p-6 border-t border-slate-50">
+          <button onClick={() => setIsLoggedIn(false)} className="flex items-center gap-4 w-full px-4 py-3 text-slate-400 hover:text-red-500 rounded-xl transition-all text-[14px] font-medium group">
+            <LogOut className="w-4.5 h-4.5 group-hover:-translate-x-1 transition-transform" /> Exit System
           </button>
         </div>
       </aside>
 
-      {/* Main Interface */}
-      <main className="flex-1 flex flex-col min-w-0 bg-white">
-        <header className="h-16 flex items-center justify-between px-8 border-b border-slate-200">
-          <div className="flex items-center gap-4">
-            <h2 className="text-sm font-bold text-slate-900 uppercase tracking-widest">{activeTab}</h2>
+      {/* Main Surface */}
+      <main className="flex-1 flex flex-col min-w-0 bg-[#FDFDFD]">
+        <header className="h-24 flex items-center justify-between px-12 border-b border-slate-50 bg-white/40 backdrop-blur-xl sticky top-0 z-10">
+          <div>
+            <span className="text-[10px] font-bold text-slate-300 uppercase tracking-[0.3em] mb-1 block">node // active</span>
+            <h2 className="text-[22px] font-semibold text-slate-900 tracking-tight capitalize">{activeTab === 'dashboard' ? 'Executive Overview' : activeTab}</h2>
           </div>
-          <div className="flex items-center gap-4">
-            <button className="p-2 text-slate-400 hover:text-slate-900 transition-all"><Bell className="w-5 h-5" /></button>
-            <div className="h-4 w-px bg-slate-200 mx-2"></div>
+          <div className="flex items-center gap-8">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-[10px] font-bold text-slate-400">AD</div>
-              <span className="text-xs font-bold text-slate-700">Administrator</span>
+              <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Global Link Active</span>
+            </div>
+            <button className="p-3 hover:bg-slate-50 rounded-2xl transition-all relative">
+              <Bell className="w-5 h-5 text-slate-300" />
+              <span className="absolute top-2 right-2 w-2 h-2 bg-indigo-500 rounded-full border-2 border-white"></span>
+            </button>
+            <div className="flex items-center gap-4 pl-4 border-l border-slate-50">
+              <div className="w-10 h-10 rounded-2xl bg-slate-50 flex items-center justify-center text-xs font-bold text-slate-400 border border-slate-100">AD</div>
             </div>
           </div>
         </header>
 
-        <div className="flex-1 p-8 overflow-y-auto">
-          <div className="max-w-6xl mx-auto space-y-8">
+        <div className="flex-1 p-12 overflow-y-auto">
+          <div className="max-w-7xl mx-auto space-y-12">
             
-            {activeTab === 'dashboard' && (
-              <div className="space-y-8">
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                  {[
-                    { label: 'Total Revenue', value: 'Rs. 452,050.00', trend: '+12%', icon: Target },
-                    { label: 'Active Clients', value: customers.length, trend: 'Stable', icon: Users },
-                    { label: 'Pending Bills', value: 'Rs. 12,500.00', trend: '-2%', icon: FileText },
-                    { label: 'Efficiency', value: '94.2%', trend: '+0.4%', icon: Activity },
-                  ].map((stat, i) => (
-                    <div key={i} className="bg-white border border-slate-200 p-5 rounded-xl shadow-sm">
-                      <div className="flex items-center justify-between mb-4">
-                        <div className="p-2 bg-slate-50 rounded-lg"><stat.icon className="w-4 h-4 text-slate-500" /></div>
-                        <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full", stat.trend.includes('+') ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-50 text-slate-400')}>{stat.trend}</span>
-                      </div>
-                      <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">{stat.label}</p>
-                      <p className="text-xl font-bold text-slate-900 mt-1">{stat.value}</p>
-                    </div>
-                  ))}
-                </div>
+            <AnimatePresence mode="wait">
+              <motion.div key={activeTab} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }}>
                 
-                <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
-                  <div className="p-6 border-b border-slate-200 flex items-center justify-between">
-                    <h3 className="text-sm font-bold text-slate-900">Recent Activity</h3>
-                    <button className="text-xs font-bold text-indigo-600 hover:underline">View All</button>
-                  </div>
-                  <div className="divide-y divide-slate-100">
-                    {[1, 2, 3].map(i => (
-                      <div key={i} className="px-6 py-4 flex items-center justify-between hover:bg-slate-50 transition-all">
-                        <div className="flex items-center gap-4">
-                          <div className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center"><Plus className="w-4 h-4 text-indigo-600" /></div>
-                          <div>
-                            <p className="text-sm font-semibold text-slate-900">Customer Registered</p>
-                            <p className="text-xs text-slate-500">BP-100{i} node initialized by Admin</p>
+                {activeTab === 'dashboard' && (
+                  <div className="space-y-12">
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+                      {[
+                        { label: 'Asset Valuation', value: 'Rs. 452,050.00', trend: '+12.4%', icon: Target },
+                        { label: 'Entity Registry', value: customers.length, trend: 'Optimal', icon: Users },
+                        { label: 'Pending Liquidity', value: 'Rs. 12,500.00', trend: '-2.1%', icon: FileText },
+                        { label: 'Growth Index', value: '94.2%', trend: '+0.4%', icon: Activity },
+                      ].map((stat, i) => (
+                        <div key={i} className="bg-white border border-slate-50 p-8 rounded-3xl shadow-[0_15px_40px_rgba(0,0,0,0.02)] group hover:shadow-xl hover:border-slate-100 transition-all cursor-default">
+                          <div className="flex items-center justify-between mb-6">
+                            <div className="p-3 bg-slate-50 rounded-2xl group-hover:bg-slate-900 group-hover:text-white transition-all"><stat.icon className="w-4 h-4" /></div>
+                            <span className={cn("text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-widest", stat.trend.includes('+') ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-50 text-slate-400')}>{stat.trend}</span>
                           </div>
+                          <p className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em]">{stat.label}</p>
+                          <p className="text-[24px] font-semibold text-slate-900 tracking-tight mt-2">{stat.value}</p>
                         </div>
-                        <span className="text-xs text-slate-400">2 hours ago</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {activeTab === 'customers' && (
-              <div className="space-y-6">
-                <div className="flex items-center justify-between gap-4">
-                  <div className="relative flex-1 max-w-md group">
-                    <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-indigo-600 transition-colors" />
-                    <input type="text" placeholder="Search registry..." className="w-full border border-slate-200 rounded-lg py-2 pl-10 pr-4 text-sm focus:outline-none focus:border-indigo-500 transition-all shadow-sm" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
-                  </div>
-                  <button onClick={() => setIsModalOpen(true)} className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-semibold hover:bg-indigo-700 transition-all shadow-sm">
-                    <Plus className="w-4 h-4" /> New Customer
-                  </button>
-                </div>
-
-                <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
-                  <table className="w-full text-left">
-                    <thead>
-                      <tr className="bg-slate-50 text-[10px] font-bold text-slate-500 uppercase tracking-widest border-b border-slate-200">
-                        <th className="px-6 py-4">Account</th>
-                        <th className="px-6 py-4">Name</th>
-                        <th className="px-6 py-4">Email</th>
-                        <th className="px-6 py-4 text-right">Balance</th>
-                        <th className="px-6 py-4 text-right">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100">
-                      {customers.map((c) => (
-                        <tr key={c.id} className="hover:bg-slate-50/50 transition-all">
-                          <td className="px-6 py-4 text-xs font-bold text-slate-400">#{c.account}</td>
-                          <td className="px-6 py-4 text-sm font-semibold text-slate-900">{c.name}</td>
-                          <td className="px-6 py-4 text-sm text-slate-500">{c.email}</td>
-                          <td className="px-6 py-4 text-right text-sm font-bold text-slate-900">Rs. {parseFloat(c.balance).toLocaleString()}</td>
-                          <td className="px-6 py-4 text-right">
-                            <div className="flex items-center justify-end gap-2">
-                              <button className="p-1.5 hover:bg-slate-100 rounded transition-all"><Edit2 className="w-3.5 h-3.5 text-slate-400" /></button>
-                              <button className="p-1.5 hover:bg-red-50 rounded transition-all"><Trash2 className="w-3.5 h-3.5 text-slate-400 hover:text-red-600" /></button>
-                            </div>
-                          </td>
-                        </tr>
                       ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            )}
+                    </div>
+                    
+                    <div className="bg-white border border-slate-50 rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.03)] overflow-hidden">
+                      <div className="p-8 border-b border-slate-50 flex items-center justify-between bg-slate-50/30">
+                        <h3 className="text-[15px] font-semibold text-slate-900 tracking-tight">Recent Synchronization</h3>
+                        <button className="text-[11px] font-bold text-slate-400 uppercase tracking-widest hover:text-slate-900 transition-colors">Archive Logs</button>
+                      </div>
+                      <div className="divide-y divide-slate-50">
+                        {[1, 2, 3].map(i => (
+                          <div key={i} className="px-8 py-6 flex items-center justify-between hover:bg-slate-50/30 transition-all group cursor-pointer">
+                            <div className="flex items-center gap-6">
+                              <div className="w-10 h-10 rounded-2xl bg-white border border-slate-50 flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform"><Plus className="w-4 h-4 text-slate-900" /></div>
+                              <div>
+                                <p className="text-[15px] font-semibold text-slate-900">Entity Registry Updated</p>
+                                <p className="text-xs text-slate-400 font-medium">Node BP-100{i} synchronized successfully by Admin</p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-4">
+                              <span className="text-[11px] font-bold text-slate-300 uppercase tracking-widest">2h ago</span>
+                              <ChevronRight className="w-4 h-4 text-slate-200 group-hover:text-slate-900 transition-all" />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
 
-            {/* Other tabs as placeholders but professional */}
-            {['invoices', 'payments', 'activity'].includes(activeTab) && (
-              <div className="py-20 text-center bg-slate-50 border border-slate-200 border-dashed rounded-xl">
-                <p className="text-sm font-bold text-slate-400 uppercase tracking-[0.2em]">Data Module: {activeTab}</p>
-                <p className="text-xs text-slate-300 mt-2 font-medium">Loading professional enterprise data set...</p>
-              </div>
-            )}
+                {activeTab === 'customers' && (
+                  <div className="space-y-10">
+                    <div className="flex flex-col md:flex-row items-center justify-between gap-8">
+                      <div className="relative flex-1 w-full max-w-lg group">
+                        <SearchIcon className="absolute left-6 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-slate-300 group-focus-within:text-slate-900 transition-colors" />
+                        <input type="text" placeholder="Search registry indices..." className="w-full border border-slate-50 bg-white rounded-2xl py-4 pl-16 pr-8 text-[15px] font-medium focus:outline-none focus:border-slate-200 transition-all shadow-[0_10px_30px_rgba(0,0,0,0.02)]" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
+                      </div>
+                      <button onClick={() => setIsModalOpen(true)} className="flex items-center justify-center gap-3 px-10 py-4 bg-slate-900 text-white rounded-2xl text-[14px] font-semibold hover:bg-black active:scale-95 transition-all shadow-xl shadow-slate-100">
+                        <Plus className="w-4.5 h-4.5" /> Initialize Node
+                      </button>
+                    </div>
+
+                    <div className="bg-white border border-slate-50 rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.03)] overflow-hidden">
+                      <table className="w-full text-left">
+                        <thead>
+                          <tr className="bg-slate-50/50 text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] border-b border-slate-50">
+                            <th className="px-10 py-6">Index Ref</th>
+                            <th className="px-10 py-6">Entity Identity</th>
+                            <th className="px-10 py-6">Location</th>
+                            <th className="px-10 py-6 text-right">Net Valuation</th>
+                            <th className="px-10 py-6 text-right"></th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-50">
+                          {customers.map((c) => (
+                            <tr key={c.id} className="hover:bg-slate-50/30 transition-all group">
+                              <td className="px-10 py-10 text-[11px] font-bold text-slate-300 tracking-widest">#{c.account}</td>
+                              <td className="px-10 py-10">
+                                <p className="text-[16px] font-semibold text-slate-900 tracking-tight">{c.name}</p>
+                                <p className="text-[13px] text-slate-400 font-medium">{c.email}</p>
+                              </td>
+                              <td className="px-10 py-10 text-[14px] font-medium text-slate-400">{c.city || 'Colombo'}</td>
+                              <td className="px-10 py-10 text-right text-[16px] font-semibold text-slate-900 tracking-tight">Rs. {parseFloat(c.balance).toLocaleString()}</td>
+                              <td className="px-10 py-10 text-right">
+                                <div className="flex items-center justify-end gap-3 opacity-0 group-hover:opacity-100 transition-all translate-x-4 group-hover:translate-x-0">
+                                  <button className="p-3 hover:bg-white rounded-xl shadow-sm border border-slate-50 transition-all"><Edit2 className="w-4 h-4 text-slate-400 hover:text-slate-900" /></button>
+                                  <button className="p-3 hover:bg-white rounded-xl shadow-sm border border-slate-50 transition-all group/del"><Trash2 className="w-4 h-4 text-slate-400 group-hover/del:text-red-500" /></button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
+
+                {['invoices', 'payments', 'activity'].includes(activeTab) && (
+                  <div className="py-40 text-center bg-white border border-slate-50 rounded-[3rem] shadow-[0_20px_50px_rgba(0,0,0,0.02)]">
+                    <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center mx-auto mb-8 shadow-inner">
+                      <Settings className="w-8 h-8 text-slate-200 animate-spin-slow" />
+                    </div>
+                    <p className="text-[11px] font-bold text-slate-300 uppercase tracking-[0.4em]">Protocol Module: {activeTab}</p>
+                    <p className="text-[13px] text-slate-400 mt-4 font-medium max-w-xs mx-auto leading-relaxed">Initializing high-fidelity financial synchronization for the requested environment.</p>
+                  </div>
+                )}
+
+              </motion.div>
+            </AnimatePresence>
 
           </div>
         </div>
       </main>
 
-      {/* Clean Modal */}
+      {/* Classy Modal */}
       <AnimatePresence>
         {isModalOpen && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-900/20 backdrop-blur-sm">
-            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="w-full max-w-[480px] bg-white border border-slate-200 rounded-xl p-8 shadow-2xl">
-              <h3 className="text-lg font-bold text-slate-900 mb-6">New Entry</h3>
-              <form onSubmit={(e) => { e.preventDefault(); addNotification('Node Added'); setIsModalOpen(false); }} className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Account #</label>
-                    <input required className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-indigo-500 bg-slate-50/30" />
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-8 bg-slate-900/5 backdrop-blur-md">
+            <motion.div initial={{ opacity: 0, scale: 0.98, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.98, y: 20 }} className="w-full max-w-[500px] bg-white border border-slate-50 rounded-[2.5rem] p-12 shadow-[0_40px_80px_rgba(0,0,0,0.1)] relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-slate-50 rounded-full -mr-16 -mt-16 opacity-50"></div>
+              <h3 className="text-2xl font-semibold text-slate-900 mb-10 tracking-tight italic">Initialize New Node</h3>
+              <form onSubmit={(e) => { e.preventDefault(); addNotification('Synchronization Successful'); setIsModalOpen(false); }} className="space-y-8 relative z-10">
+                <div className="grid grid-cols-2 gap-8">
+                  <div className="space-y-3">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Account ID</label>
+                    <input required className="w-full border border-slate-50 rounded-2xl px-5 py-3.5 text-[14px] font-medium focus:outline-none focus:border-slate-200 bg-slate-50/30 transition-all" />
                   </div>
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Full Name</label>
-                    <input required className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-indigo-500 bg-slate-50/30" />
+                  <div className="space-y-3">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Identity Name</label>
+                    <input required className="w-full border border-slate-50 rounded-2xl px-5 py-3.5 text-[14px] font-medium focus:outline-none focus:border-slate-200 bg-slate-50/30 transition-all" />
                   </div>
                 </div>
-                <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Email Address</label>
-                  <input required type="email" className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-indigo-500 bg-slate-50/30" />
+                <div className="space-y-3">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Digital Endpoint (Email)</label>
+                  <input required type="email" className="w-full border border-slate-50 rounded-2xl px-5 py-3.5 text-[14px] font-medium focus:outline-none focus:border-slate-200 bg-slate-50/30 transition-all" />
                 </div>
-                <div className="flex gap-3 pt-4">
-                  <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 px-4 py-2 text-sm font-semibold text-slate-500 hover:bg-slate-50 rounded-lg border border-slate-200 transition-all">Cancel</button>
-                  <button type="submit" className="flex-1 px-4 py-2 bg-indigo-600 text-white text-sm font-semibold hover:bg-indigo-700 rounded-lg transition-all shadow-sm">Save Entry</button>
+                <div className="flex gap-4 pt-6">
+                  <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 px-6 py-4 text-sm font-semibold text-slate-400 hover:text-slate-900 hover:bg-slate-50 rounded-2xl transition-all">Discard</button>
+                  <button type="submit" className="flex-1 px-6 py-4 bg-slate-900 text-white text-sm font-semibold hover:bg-black rounded-2xl transition-all shadow-xl shadow-slate-100">Commit Node</button>
                 </div>
               </form>
             </motion.div>
