@@ -5,8 +5,10 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+let mainWindow;
+
 function createWindow() {
-  const win = new BrowserWindow({
+  mainWindow = new BrowserWindow({
     width: 1200,
     height: 800,
     webPreferences: {
@@ -16,22 +18,37 @@ function createWindow() {
     title: "Customer Billing System",
     backgroundColor: '#0f172a',
     autoHideMenuBar: true,
+    show: false, // Don't show until ready
   });
 
-  // In development, use the Vite dev server
-  const startUrl = process.env.NODE_ENV === 'development'
+  const isDev = process.env.NODE_ENV === 'development';
+  const startUrl = isDev
     ? 'http://localhost:5173'
     : `file://${path.join(__dirname, 'dist/index.html')}`;
 
-  win.loadURL(startUrl);
+  console.log(`Loading URL: ${startUrl}`);
+  
+  mainWindow.loadURL(startUrl);
 
-  // Open dev tools in development
-  if (process.env.NODE_ENV === 'development') {
-    win.webContents.openDevTools();
+  mainWindow.once('ready-to-show', () => {
+    mainWindow.show();
+  });
+
+  if (isDev) {
+    mainWindow.webContents.openDevTools();
   }
+
+  mainWindow.on('closed', () => {
+    mainWindow = null;
+  });
+
+  // Handle load errors
+  mainWindow.webContents.on('did-fail-load', (event, errorCode, errorDescription) => {
+    console.error(`Failed to load: ${errorDescription} (${errorCode})`);
+  });
 }
 
-app.whenReady().then(createWindow);
+app.on('ready', createWindow);
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
@@ -40,7 +57,7 @@ app.on('window-all-closed', () => {
 });
 
 app.on('activate', () => {
-  if (BrowserWindow.getAllWindows().length === 0) {
+  if (mainWindow === null) {
     createWindow();
   }
 });
