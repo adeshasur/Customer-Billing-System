@@ -13,7 +13,12 @@ import {
   TrendingUp, 
   Bell,
   User as UserIcon,
-  ChevronRight
+  ChevronRight,
+  Lock,
+  Mail,
+  Eye,
+  EyeOff,
+  ShieldCheck
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -23,14 +28,16 @@ function cn(...inputs) {
   return twMerge(clsx(inputs));
 }
 
-// Mock initial data if empty
 const INITIAL_CUSTOMERS = [
   { id: '1', account: '1001', name: 'John Doe', type: 'Premium', balance: 1250.50 },
   { id: '2', account: '1002', name: 'Jane Smith', type: 'Regular', balance: 450.00 },
 ];
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState('customers');
+  const [isLoggedIn, setIsLoggedIn] = useState(() => {
+    return localStorage.getItem('billing_auth') === 'true';
+  });
+  const [activeTab, setActiveTab] = useState('dashboard');
   const [customers, setCustomers] = useState(() => {
     const saved = localStorage.getItem('billing_customers');
     return saved ? JSON.parse(saved) : INITIAL_CUSTOMERS;
@@ -40,9 +47,31 @@ export default function App() {
   const [editingCustomer, setEditingCustomer] = useState(null);
   const [formData, setFormData] = useState({ account: '', name: '', type: 'Regular', balance: '' });
 
+  // Login State
+  const [loginEmail, setLoginEmail] = useState('admin@billing.com');
+  const [loginPassword, setLoginPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [loginError, setLoginError] = useState('');
+
   useEffect(() => {
     localStorage.setItem('billing_customers', JSON.stringify(customers));
   }, [customers]);
+
+  const handleLogin = (e) => {
+    e.preventDefault();
+    if (loginEmail === 'admin@billing.com' && loginPassword === 'admin123') {
+      setIsLoggedIn(true);
+      localStorage.setItem('billing_auth', 'true');
+      setLoginError('');
+    } else {
+      setLoginError('Invalid credentials. Try admin@billing.com / admin123');
+    }
+  };
+
+  const handleLogout = () => {
+    setIsLoggedIn(false);
+    localStorage.removeItem('billing_auth');
+  };
 
   const filteredCustomers = customers.filter(c => 
     c.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
@@ -91,6 +120,101 @@ export default function App() {
     </button>
   );
 
+  if (!isLoggedIn) {
+    return (
+      <div className="min-h-screen bg-[#020617] flex items-center justify-center p-6 relative overflow-hidden">
+        {/* Animated Background Elements */}
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-sky-500/10 rounded-full blur-[120px] animate-pulse"></div>
+        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-indigo-500/10 rounded-full blur-[120px] animate-pulse delay-700"></div>
+
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="w-full max-w-md z-10"
+        >
+          <div className="flex flex-col items-center mb-10">
+            <div className="w-16 h-16 bg-gradient-to-br from-sky-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-2xl shadow-sky-500/20 mb-6 rotate-12">
+              <ShieldCheck className="w-10 h-10 text-white" />
+            </div>
+            <h1 className="text-4xl font-black text-white tracking-tight mb-2">BillingPro</h1>
+            <p className="text-slate-500 font-medium text-center">Secure Gateway to Customer Analytics</p>
+          </div>
+
+          <div className="glass border border-slate-800/50 rounded-[2.5rem] p-10 shadow-2xl relative">
+            <h2 className="text-2xl font-bold text-white mb-8">Login to System</h2>
+            
+            <form onSubmit={handleLogin} className="space-y-6">
+              <div className="space-y-2">
+                <label className="text-xs font-bold uppercase tracking-widest text-slate-500 ml-1">Email Address</label>
+                <div className="relative group">
+                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 group-focus-within:text-sky-400 transition-colors" />
+                  <input 
+                    type="email" 
+                    required
+                    className="w-full bg-slate-900/50 border border-slate-800 rounded-2xl py-4 pl-12 pr-4 focus:outline-none focus:border-sky-500/50 focus:ring-4 focus:ring-sky-500/5 transition-all text-white placeholder:text-slate-600"
+                    placeholder="admin@billing.com"
+                    value={loginEmail}
+                    onChange={(e) => setLoginEmail(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex items-center justify-between ml-1">
+                  <label className="text-xs font-bold uppercase tracking-widest text-slate-500">Password</label>
+                  <button type="button" className="text-xs font-bold text-sky-500 hover:text-sky-400 transition-colors">Forgot?</button>
+                </div>
+                <div className="relative group">
+                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 group-focus-within:text-sky-400 transition-colors" />
+                  <input 
+                    type={showPassword ? "text" : "password"} 
+                    required
+                    className="w-full bg-slate-900/50 border border-slate-800 rounded-2xl py-4 pl-12 pr-12 focus:outline-none focus:border-sky-500/50 focus:ring-4 focus:ring-sky-500/5 transition-all text-white placeholder:text-slate-600"
+                    placeholder="••••••••"
+                    value={loginPassword}
+                    onChange={(e) => setLoginPassword(e.target.value)}
+                  />
+                  <button 
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 p-1 hover:bg-slate-800 rounded-lg text-slate-500 hover:text-slate-200 transition-all"
+                  >
+                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  </button>
+                </div>
+              </div>
+
+              <AnimatePresence>
+                {loginError && (
+                  <motion.div 
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    className="bg-red-500/10 border border-red-500/20 text-red-400 px-4 py-3 rounded-xl text-sm font-medium"
+                  >
+                    {loginError}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              <button 
+                type="submit"
+                className="w-full bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-500 hover:to-indigo-500 text-white py-4 rounded-2xl font-bold text-lg shadow-xl shadow-sky-900/20 transition-all active:scale-[0.98]"
+              >
+                Sign In
+              </button>
+            </form>
+
+            <div className="mt-10 pt-8 border-t border-slate-800 flex items-center justify-center gap-2">
+              <span className="text-sm text-slate-500">Authorized personnel only</span>
+              <div className="w-1 h-1 bg-slate-700 rounded-full"></div>
+              <span className="text-sm font-bold text-slate-400 italic">v1.0.4</span>
+            </div>
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex min-h-screen bg-[#0f172a] text-slate-200 overflow-hidden">
       {/* Sidebar */}
@@ -112,7 +236,10 @@ export default function App() {
         </nav>
 
         <div className="pt-6 border-t border-slate-800 mt-auto">
-          <button className="flex items-center gap-3 w-full px-4 py-3 text-slate-400 hover:text-red-400 hover:bg-red-500/5 rounded-xl transition-all">
+          <button 
+            onClick={handleLogout}
+            className="flex items-center gap-3 w-full px-4 py-3 text-slate-400 hover:text-red-400 hover:bg-red-500/5 rounded-xl transition-all"
+          >
             <LogOut className="w-5 h-5" />
             <span className="font-medium">Logout</span>
           </button>
