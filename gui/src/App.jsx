@@ -1,69 +1,70 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Users, 
-  PlusCircle, 
+  LayoutDashboard, 
+  BarChart3, 
+  Settings as SettingsIcon, 
+  LogOut, 
+  Plus, 
   Search, 
+  Edit2, 
+  Trash2, 
   CreditCard, 
   TrendingUp, 
-  Trash2, 
-  Edit, 
-  LogOut,
-  LayoutDashboard,
-  Settings,
   Bell,
-  User
+  User as UserIcon,
+  ChevronRight
 } from 'lucide-react';
+import { clsx, type ClassValue } from 'clsx';
+import { twMerge } from 'tailwind-merge';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const App = () => {
+function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}
+
+// Mock initial data if empty
+const INITIAL_CUSTOMERS = [
+  { id: '1', account: '1001', name: 'John Doe', type: 'Premium', balance: 1250.50 },
+  { id: '2', account: '1002', name: 'Jane Smith', type: 'Regular', balance: 450.00 },
+];
+
+export default function App() {
+  const [activeTab, setActiveTab] = useState('customers');
   const [customers, setCustomers] = useState(() => {
-    const saved = localStorage.getItem('customers');
-    return saved ? JSON.parse(saved) : [];
+    const saved = localStorage.getItem('billing_customers');
+    return saved ? JSON.parse(saved) : INITIAL_CUSTOMERS;
   });
-  
-  const [searchTerm, setSearchTerm] = useState('');
-  const [showModal, setShowModal] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState(null);
-  
-  const [formData, setFormData] = useState({
-    accountNumber: '',
-    name: '',
-    address: '',
-    phone: '',
-    email: '',
-    type: 'Savings',
-    balance: ''
-  });
+  const [formData, setFormData] = useState({ account: '', name: '', type: 'Regular', balance: '' });
 
   useEffect(() => {
-    localStorage.setItem('customers', JSON.stringify(customers));
+    localStorage.setItem('billing_customers', JSON.stringify(customers));
   }, [customers]);
 
   const filteredCustomers = customers.filter(c => 
-    c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    c.accountNumber.toString().includes(searchTerm)
+    c.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    c.account.includes(searchQuery)
   );
 
   const stats = {
     totalBalance: customers.reduce((acc, c) => acc + parseFloat(c.balance || 0), 0),
     activeCustomers: customers.length,
-    averageBalance: customers.length ? (customers.reduce((acc, c) => acc + parseFloat(c.balance || 0), 0) / customers.length).toFixed(2) : 0
+    avgBalance: customers.length > 0 ? (customers.reduce((acc, c) => acc + parseFloat(c.balance || 0), 0) / customers.length) : 0
   };
 
-  const handleInputChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  const handleSubmit = (e) => {
+  const handleAddOrUpdate = (e) => {
     e.preventDefault();
     if (editingCustomer) {
-      setCustomers(customers.map(c => c.id === editingCustomer.id ? { ...formData, id: c.id } : c));
-      setEditingCustomer(null);
+      setCustomers(customers.map(c => c.id === editingCustomer.id ? { ...editingCustomer, ...formData } : c));
     } else {
-      setCustomers([...customers, { ...formData, id: Date.now() }]);
+      setCustomers([...customers, { id: Date.now().toString(), ...formData }]);
     }
-    setShowModal(false);
-    setFormData({ accountNumber: '', name: '', address: '', phone: '', email: '', type: 'Savings', balance: '' });
+    setIsModalOpen(false);
+    setEditingCustomer(null);
+    setFormData({ account: '', name: '', type: 'Regular', balance: '' });
   };
 
   const handleDelete = (id) => {
@@ -72,258 +73,454 @@ const App = () => {
     }
   };
 
-  const startEdit = (customer) => {
-    setEditingCustomer(customer);
-    setFormData(customer);
-    setShowModal(true);
-  };
+  const SidebarItem = ({ id, icon: Icon, label }) => (
+    <button
+      onClick={() => setActiveTab(id)}
+      className={cn(
+        "flex items-center gap-3 w-full px-4 py-3 rounded-xl transition-all duration-300 group",
+        activeTab === id 
+          ? "bg-sky-500/10 text-sky-400 shadow-[inset_0_0_20px_rgba(14,165,233,0.1)]" 
+          : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/50"
+      )}
+    >
+      <Icon className={cn("w-5 h-5", activeTab === id ? "text-sky-400" : "text-slate-400 group-hover:text-slate-200")} />
+      <span className="font-medium">{label}</span>
+      {activeTab === id && (
+        <motion.div layoutId="activeTab" className="ml-auto w-1 h-5 bg-sky-400 rounded-full" />
+      )}
+    </button>
+  );
 
   return (
-    <div className="flex min-h-screen text-slate-200 font-sans">
+    <div className="flex min-h-screen bg-[#0f172a] text-slate-200 overflow-hidden">
       {/* Sidebar */}
-      <aside className="w-64 glass border-r border-slate-800 flex flex-col p-6 hidden md:flex">
-        <div className="flex items-center gap-3 mb-12">
-          <div className="w-10 h-10 bg-primary-600 rounded-xl flex items-center justify-center shadow-lg shadow-primary-500/20">
-            <CreditCard className="text-white" size={24} />
+      <aside className="w-64 glass border-r border-slate-800 flex flex-col p-6 z-20">
+        <div className="flex items-center gap-3 mb-10 px-2">
+          <div className="w-8 h-8 bg-sky-500 rounded-lg flex items-center justify-center shadow-lg shadow-sky-500/20">
+            <CreditCard className="w-5 h-5 text-white" />
           </div>
-          <h1 className="text-xl font-bold tracking-tight">Billing<span className="text-primary-500">Pro</span></h1>
+          <h1 className="text-xl font-bold bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">
+            BillingPro
+          </h1>
         </div>
-        
+
         <nav className="flex-1 space-y-2">
-          <NavItem icon={<LayoutDashboard size={20} />} label="Dashboard" active />
-          <NavItem icon={<Users size={20} />} label="Customers" />
-          <NavItem icon={<TrendingUp size={20} />} label="Analytics" />
-          <NavItem icon={<Settings size={20} />} label="Settings" />
+          <SidebarItem id="dashboard" icon={LayoutDashboard} label="Dashboard" />
+          <SidebarItem id="customers" icon={Users} label="Customers" />
+          <SidebarItem id="analytics" icon={BarChart3} label="Analytics" />
+          <SidebarItem id="settings" icon={SettingsIcon} label="Settings" />
         </nav>
 
-        <div className="pt-6 border-t border-slate-800">
-          <button className="flex items-center gap-3 text-slate-400 hover:text-white transition-colors">
-            <LogOut size={20} />
-            <span>Logout</span>
+        <div className="pt-6 border-t border-slate-800 mt-auto">
+          <button className="flex items-center gap-3 w-full px-4 py-3 text-slate-400 hover:text-red-400 hover:bg-red-500/5 rounded-xl transition-all">
+            <LogOut className="w-5 h-5" />
+            <span className="font-medium">Logout</span>
           </button>
         </div>
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 p-8 md:p-12 overflow-auto">
-        <header className="flex justify-between items-center mb-12">
+      <main className="flex-1 p-8 overflow-y-auto bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-sky-900/10 via-transparent to-transparent">
+        <header className="flex items-center justify-between mb-10">
           <div>
-            <h2 className="text-3xl font-bold mb-1">Welcome Back</h2>
-            <p className="text-slate-400">Here's what's happening with your billing system today.</p>
+            <h2 className="text-3xl font-bold text-white mb-2">
+              {activeTab === 'dashboard' && "Overview"}
+              {activeTab === 'customers' && "Customer Directory"}
+              {activeTab === 'analytics' && "Performance Analytics"}
+              {activeTab === 'settings' && "System Settings"}
+            </h2>
+            <p className="text-slate-400">
+              {activeTab === 'dashboard' && "Everything that's happening with your billing system today."}
+              {activeTab === 'customers' && "Manage and track all your customer billing records."}
+              {activeTab === 'analytics' && "Deep dive into your revenue and customer trends."}
+              {activeTab === 'settings' && "Configure your application preferences and security."}
+            </p>
           </div>
           <div className="flex items-center gap-4">
-            <button className="p-2 text-slate-400 hover:text-white transition-colors"><Bell size={22} /></button>
-            <div className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center border border-slate-700">
-              <User size={20} />
+            <button className="p-2.5 rounded-xl glass-card hover:bg-slate-800/80 transition-all relative">
+              <Bell className="w-5 h-5 text-slate-400" />
+              <span className="absolute top-2 right-2 w-2 h-2 bg-sky-500 rounded-full border-2 border-[#0f172a]"></span>
+            </button>
+            <div className="flex items-center gap-3 pl-4 border-l border-slate-800">
+              <div className="text-right">
+                <p className="text-sm font-semibold text-white">Adheesha</p>
+                <p className="text-xs text-slate-500">Administrator</p>
+              </div>
+              <div className="w-10 h-10 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center overflow-hidden">
+                <UserIcon className="w-6 h-6 text-slate-400" />
+              </div>
             </div>
           </div>
         </header>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-          <StatCard 
-            title="Total Balance" 
-            value={`$${stats.totalBalance.toLocaleString()}`} 
-            icon={<CreditCard className="text-primary-400" />}
-            trend="+12.5%"
-          />
-          <StatCard 
-            title="Active Customers" 
-            value={stats.activeCustomers} 
-            icon={<Users className="text-emerald-400" />}
-            trend="+3 new"
-          />
-          <StatCard 
-            title="Avg. Balance" 
-            value={`$${stats.averageBalance}`} 
-            icon={<TrendingUp className="text-amber-400" />}
-            trend="Stable"
-          />
-        </div>
-
-        {/* Action Bar */}
-        <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-8">
-          <div className="relative w-full md:w-96">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
-            <input 
-              type="text" 
-              placeholder="Search by name or account..."
-              className="w-full bg-slate-900/50 border border-slate-800 rounded-xl py-2.5 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-primary-500/50 transition-all"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
-          <button 
-            onClick={() => {
-              setEditingCustomer(null);
-              setFormData({ accountNumber: '', name: '', address: '', phone: '', email: '', type: 'Savings', balance: '' });
-              setShowModal(true);
-            }}
-            className="flex items-center gap-2 bg-primary-600 hover:bg-primary-500 text-white px-6 py-2.5 rounded-xl font-semibold transition-all shadow-lg shadow-primary-500/20"
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={activeTab}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2 }}
           >
-            <PlusCircle size={20} />
-            Add Customer
-          </button>
-        </div>
+            {activeTab === 'dashboard' && (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div className="glass-card p-6 rounded-2xl relative overflow-hidden group">
+                  <div className="absolute top-0 right-0 p-4 opacity-10 transition-opacity group-hover:opacity-20">
+                    <CreditCard className="w-16 h-16" />
+                  </div>
+                  <div className="flex items-center gap-4 mb-4">
+                    <div className="w-12 h-12 rounded-xl bg-sky-500/10 flex items-center justify-center">
+                      <CreditCard className="w-6 h-6 text-sky-400" />
+                    </div>
+                    <span className="text-sky-500 text-sm font-bold bg-sky-500/10 px-2 py-0.5 rounded-full">+12.5%</span>
+                  </div>
+                  <p className="text-slate-400 text-sm font-medium mb-1">Total Balance</p>
+                  <p className="text-3xl font-bold text-white">${stats.totalBalance.toLocaleString()}</p>
+                </div>
+                
+                <div className="glass-card p-6 rounded-2xl relative overflow-hidden group">
+                  <div className="absolute top-0 right-0 p-4 opacity-10 transition-opacity group-hover:opacity-20">
+                    <Users className="w-16 h-16" />
+                  </div>
+                  <div className="flex items-center gap-4 mb-4">
+                    <div className="w-12 h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center">
+                      <Users className="w-6 h-6 text-emerald-400" />
+                    </div>
+                    <span className="text-emerald-500 text-sm font-bold bg-emerald-500/10 px-2 py-0.5 rounded-full">+3 new</span>
+                  </div>
+                  <p className="text-slate-400 text-sm font-medium mb-1">Active Customers</p>
+                  <p className="text-3xl font-bold text-white">{stats.activeCustomers}</p>
+                </div>
 
-        {/* Table */}
-        <div className="glass rounded-2xl overflow-hidden border border-slate-800">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="bg-slate-800/50 border-b border-slate-700">
-                <th className="px-6 py-4 font-semibold text-slate-300">Account #</th>
-                <th className="px-6 py-4 font-semibold text-slate-300">Customer</th>
-                <th className="px-6 py-4 font-semibold text-slate-300">Type</th>
-                <th className="px-6 py-4 font-semibold text-slate-300 text-right">Balance</th>
-                <th className="px-6 py-4 font-semibold text-slate-300 text-center">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-800">
-              <AnimatePresence>
-                {filteredCustomers.map((customer) => (
-                  <motion.tr 
-                    key={customer.id}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.95 }}
-                    className="hover:bg-slate-800/30 transition-colors group"
-                  >
-                    <td className="px-6 py-4 text-slate-400 font-mono">#{customer.accountNumber}</td>
-                    <td className="px-6 py-4">
-                      <div className="font-semibold">{customer.name}</div>
-                      <div className="text-xs text-slate-500">{customer.email}</div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${
-                        customer.type === 'Savings' ? 'bg-primary-500/10 text-primary-400' : 'bg-amber-500/10 text-amber-400'
-                      }`}>
-                        {customer.type}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-right font-semibold text-emerald-400">
-                      ${parseFloat(customer.balance).toLocaleString()}
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button 
-                          onClick={() => startEdit(customer)}
-                          className="p-2 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg transition-all"
-                        >
-                          <Edit size={16} />
-                        </button>
-                        <button 
-                          onClick={() => handleDelete(customer.id)}
-                          className="p-2 text-slate-400 hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-all"
-                        >
-                          <Trash2 size={16} />
-                        </button>
+                <div className="glass-card p-6 rounded-2xl relative overflow-hidden group">
+                  <div className="absolute top-0 right-0 p-4 opacity-10 transition-opacity group-hover:opacity-20">
+                    <TrendingUp className="w-16 h-16" />
+                  </div>
+                  <div className="flex items-center gap-4 mb-4">
+                    <div className="w-12 h-12 rounded-xl bg-amber-500/10 flex items-center justify-center">
+                      <TrendingUp className="w-6 h-6 text-amber-400" />
+                    </div>
+                    <span className="text-slate-500 text-sm font-bold bg-slate-500/10 px-2 py-0.5 rounded-full">Stable</span>
+                  </div>
+                  <p className="text-slate-400 text-sm font-medium mb-1">Avg. Balance</p>
+                  <p className="text-3xl font-bold text-white">${stats.avgBalance.toLocaleString()}</p>
+                </div>
+                
+                <div className="col-span-1 md:col-span-2 glass-card p-8 rounded-2xl">
+                  <h3 className="text-xl font-bold mb-6 flex items-center gap-3">
+                    Recent Activity
+                    <span className="text-xs font-normal text-slate-500 bg-slate-800 px-2 py-1 rounded-md">Last 24 hours</span>
+                  </h3>
+                  <div className="space-y-6">
+                    {[1, 2, 3].map((i) => (
+                      <div key={i} className="flex items-center gap-4 group">
+                        <div className="w-10 h-10 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center">
+                          <Plus className="w-5 h-5 text-sky-400" />
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-sm font-medium text-white group-hover:text-sky-400 transition-colors">New Customer Added</p>
+                          <p className="text-xs text-slate-500">Customer #100{i} was added to the system</p>
+                        </div>
+                        <span className="text-xs text-slate-600">2h ago</span>
                       </div>
-                    </td>
-                  </motion.tr>
-                ))}
-              </AnimatePresence>
-              {filteredCustomers.length === 0 && (
-                <tr>
-                  <td colSpan="5" className="px-6 py-12 text-center text-slate-500">
-                    No customers found matching your search.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="glass-card p-8 rounded-2xl flex flex-col items-center justify-center text-center">
+                  <div className="w-16 h-16 rounded-full bg-sky-500/10 flex items-center justify-center mb-4">
+                    <BarChart3 className="w-8 h-8 text-sky-400" />
+                  </div>
+                  <h3 className="text-lg font-bold mb-2">Quick Report</h3>
+                  <p className="text-sm text-slate-500 mb-6">Generate a comprehensive billing report for this month.</p>
+                  <button className="w-full py-3 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-semibold transition-all shadow-lg shadow-sky-900/20">
+                    Generate PDF
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'customers' && (
+              <>
+                <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-8">
+                  <div className="relative w-full md:w-96 group">
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 group-focus-within:text-sky-400 transition-colors" />
+                    <input 
+                      type="text" 
+                      placeholder="Search by name or account..."
+                      className="w-full bg-slate-900/50 border border-slate-800 rounded-xl py-3 pl-12 pr-4 focus:outline-none focus:border-sky-500/50 transition-all"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                    />
+                  </div>
+                  <button 
+                    onClick={() => { setEditingCustomer(null); setFormData({ account: '', name: '', type: 'Regular', balance: '' }); setIsModalOpen(true); }}
+                    className="flex items-center gap-2 bg-sky-600 hover:bg-sky-500 text-white px-6 py-3 rounded-xl font-semibold transition-all shadow-lg shadow-sky-900/20 active:scale-95"
+                  >
+                    <Plus className="w-5 h-5" />
+                    Add Customer
+                  </button>
+                </div>
+
+                <div className="glass-card rounded-2xl overflow-hidden border border-slate-800 shadow-2xl">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left">
+                      <thead>
+                        <tr className="bg-slate-800/30 text-slate-400 text-sm uppercase tracking-wider">
+                          <th className="px-8 py-5 font-semibold">Account #</th>
+                          <th className="px-8 py-5 font-semibold">Customer</th>
+                          <th className="px-8 py-5 font-semibold">Type</th>
+                          <th className="px-8 py-5 font-semibold">Balance</th>
+                          <th className="px-8 py-5 font-semibold text-right">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-800">
+                        {filteredCustomers.length > 0 ? filteredCustomers.map((customer) => (
+                          <motion.tr 
+                            layout
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            key={customer.id} 
+                            className="hover:bg-slate-800/20 transition-colors group"
+                          >
+                            <td className="px-8 py-5">
+                              <span className="font-mono text-sky-400 bg-sky-400/5 px-2 py-1 rounded border border-sky-400/10">
+                                {customer.account}
+                              </span>
+                            </td>
+                            <td className="px-8 py-5">
+                              <div className="flex items-center gap-3">
+                                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-sky-500 to-indigo-600 flex items-center justify-center text-xs font-bold text-white">
+                                  {customer.name.charAt(0)}
+                                </div>
+                                <span className="font-semibold text-slate-200">{customer.name}</span>
+                              </div>
+                            </td>
+                            <td className="px-8 py-5">
+                              <span className={cn(
+                                "px-3 py-1 rounded-full text-xs font-bold border",
+                                customer.type === 'Premium' 
+                                  ? "bg-amber-500/10 text-amber-500 border-amber-500/20" 
+                                  : "bg-slate-500/10 text-slate-400 border-slate-500/20"
+                              )}>
+                                {customer.type}
+                              </span>
+                            </td>
+                            <td className="px-8 py-5 font-mono text-white font-semibold">
+                              ${parseFloat(customer.balance).toFixed(2)}
+                            </td>
+                            <td className="px-8 py-5 text-right">
+                              <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <button 
+                                  onClick={() => { setEditingCustomer(customer); setFormData({ account: customer.account, name: customer.name, type: customer.type, balance: customer.balance }); setIsModalOpen(true); }}
+                                  className="p-2 hover:bg-sky-500/10 rounded-lg text-sky-400 transition-all"
+                                >
+                                  <Edit2 className="w-4 h-4" />
+                                </button>
+                                <button 
+                                  onClick={() => handleDelete(customer.id)}
+                                  className="p-2 hover:bg-red-500/10 rounded-lg text-red-400 transition-all"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              </div>
+                            </td>
+                          </motion.tr>
+                        )) : (
+                          <tr>
+                            <td colSpan={5} className="px-8 py-20 text-center text-slate-500">
+                              <div className="flex flex-col items-center gap-4">
+                                <div className="w-16 h-16 rounded-full bg-slate-800/50 flex items-center justify-center">
+                                  <Users className="w-8 h-8 opacity-20" />
+                                </div>
+                                <p>No customers found matching your search.</p>
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </>
+            )}
+
+            {activeTab === 'analytics' && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="glass-card p-8 rounded-2xl min-h-[400px] flex flex-col">
+                  <h3 className="text-xl font-bold mb-8">Revenue Growth</h3>
+                  <div className="flex-1 flex items-end gap-4 px-4">
+                    {[40, 65, 45, 90, 75, 55, 80].map((h, i) => (
+                      <div key={i} className="flex-1 flex flex-col items-center gap-3 group">
+                        <motion.div 
+                          initial={{ height: 0 }}
+                          animate={{ height: `${h}%` }}
+                          className="w-full bg-sky-500/20 group-hover:bg-sky-500/40 rounded-t-lg transition-all relative"
+                        >
+                          <div className="absolute -top-8 left-1/2 -translate-x-1/2 text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity bg-slate-800 px-2 py-1 rounded">
+                            ${(h * 100).toLocaleString()}
+                          </div>
+                        </motion.div>
+                        <span className="text-[10px] uppercase font-bold text-slate-600">Day {i+1}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                
+                <div className="space-y-6">
+                  <div className="glass-card p-6 rounded-2xl flex items-center justify-between">
+                    <div>
+                      <p className="text-slate-400 text-sm mb-1">Retention Rate</p>
+                      <p className="text-2xl font-bold text-white">94.2%</p>
+                    </div>
+                    <div className="w-12 h-12 rounded-full border-4 border-sky-500/20 border-t-sky-500 rotate-45"></div>
+                  </div>
+                  <div className="glass-card p-6 rounded-2xl flex items-center justify-between">
+                    <div>
+                      <p className="text-slate-400 text-sm mb-1">New Subscriptions</p>
+                      <p className="text-2xl font-bold text-white">128</p>
+                    </div>
+                    <div className="w-12 h-12 rounded-full border-4 border-emerald-500/20 border-t-emerald-500 -rotate-12"></div>
+                  </div>
+                  <div className="glass-card p-8 rounded-2xl flex-1">
+                    <h3 className="text-lg font-bold mb-4">Top Customers</h3>
+                    <div className="space-y-4">
+                      {customers.sort((a, b) => b.balance - a.balance).slice(0, 3).map((c, i) => (
+                        <div key={i} className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <span className="text-slate-600 font-bold">#{i+1}</span>
+                            <span className="text-sm font-semibold">{c.name}</span>
+                          </div>
+                          <span className="text-sm font-mono text-sky-400">${parseFloat(c.balance).toLocaleString()}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'settings' && (
+              <div className="max-w-2xl space-y-6">
+                <div className="glass-card p-8 rounded-2xl">
+                  <h3 className="text-xl font-bold mb-6">Account Settings</h3>
+                  <div className="space-y-6">
+                    <div className="flex items-center justify-between py-4 border-b border-slate-800">
+                      <div>
+                        <p className="font-semibold">Two-Factor Authentication</p>
+                        <p className="text-sm text-slate-500">Add an extra layer of security to your account.</p>
+                      </div>
+                      <div className="w-12 h-6 bg-sky-600 rounded-full relative cursor-pointer p-1">
+                        <div className="w-4 h-4 bg-white rounded-full ml-auto"></div>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between py-4 border-b border-slate-800">
+                      <div>
+                        <p className="font-semibold">Email Notifications</p>
+                        <p className="text-sm text-slate-500">Receive alerts about billing and system status.</p>
+                      </div>
+                      <div className="w-12 h-6 bg-slate-800 rounded-full relative cursor-pointer p-1">
+                        <div className="w-4 h-4 bg-slate-500 rounded-full"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="glass-card p-8 rounded-2xl">
+                  <h3 className="text-xl font-bold mb-6">Database Management</h3>
+                  <div className="flex items-center gap-4">
+                    <button className="px-6 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-sm font-bold transition-all">
+                      Backup Database
+                    </button>
+                    <button className="px-6 py-2.5 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 text-sm font-bold transition-all">
+                      Clear Cache
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </motion.div>
+        </AnimatePresence>
       </main>
 
       {/* Modal */}
       <AnimatePresence>
-        {showModal && (
+        {isModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <motion.div 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              onClick={() => setShowModal(false)}
-              className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm"
+              onClick={() => setIsModalOpen(false)}
+              className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm" 
             />
             <motion.div 
               initial={{ scale: 0.9, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.9, opacity: 0, y: 20 }}
-              className="relative w-full max-w-lg glass rounded-2xl p-8 shadow-2xl"
+              className="relative w-full max-w-md glass border border-slate-800 rounded-3xl p-8 shadow-2xl"
             >
-              <h3 className="text-2xl font-bold mb-6">
+              <h3 className="text-2xl font-bold text-white mb-6">
                 {editingCustomer ? 'Edit Customer' : 'Add New Customer'}
               </h3>
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <form onSubmit={handleAddOrUpdate} className="space-y-5">
+                <div className="space-y-2">
+                  <label className="text-sm font-bold text-slate-400 ml-1">Account Number</label>
+                  <input 
+                    required 
+                    className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 focus:outline-none focus:border-sky-500"
+                    placeholder="e.g. 1001"
+                    value={formData.account}
+                    onChange={(e) => setFormData({ ...formData, account: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-bold text-slate-400 ml-1">Customer Name</label>
+                  <input 
+                    required 
+                    className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 focus:outline-none focus:border-sky-500"
+                    placeholder="Full Name"
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  />
+                </div>
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <label className="text-sm text-slate-400">Account Number</label>
-                    <input 
-                      required name="accountNumber" value={formData.accountNumber} onChange={handleInputChange}
-                      className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 focus:ring-2 focus:ring-primary-500/50 outline-none transition-all"
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <label className="text-sm text-slate-400">Account Type</label>
+                  <div className="space-y-2">
+                    <label className="text-sm font-bold text-slate-400 ml-1">Account Type</label>
                     <select 
-                      name="type" value={formData.type} onChange={handleInputChange}
-                      className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 focus:ring-2 focus:ring-primary-500/50 outline-none transition-all"
+                      className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 focus:outline-none focus:border-sky-500"
+                      value={formData.type}
+                      onChange={(e) => setFormData({ ...formData, type: e.target.value })}
                     >
-                      <option>Savings</option>
-                      <option>Current</option>
+                      <option value="Regular">Regular</option>
+                      <option value="Premium">Premium</option>
                     </select>
                   </div>
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-sm text-slate-400">Full Name</label>
-                  <input 
-                    required name="name" value={formData.name} onChange={handleInputChange}
-                    className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 focus:ring-2 focus:ring-primary-500/50 outline-none transition-all"
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <label className="text-sm text-slate-400">Phone</label>
+                  <div className="space-y-2">
+                    <label className="text-sm font-bold text-slate-400 ml-1">Initial Balance</label>
                     <input 
-                      name="phone" value={formData.phone} onChange={handleInputChange}
-                      className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 focus:ring-2 focus:ring-primary-500/50 outline-none transition-all"
+                      required 
+                      type="number" 
+                      step="0.01"
+                      className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 focus:outline-none focus:border-sky-500"
+                      placeholder="0.00"
+                      value={formData.balance}
+                      onChange={(e) => setFormData({ ...formData, balance: e.target.value })}
                     />
                   </div>
-                  <div className="space-y-1.5">
-                    <label className="text-sm text-slate-400">Balance ($)</label>
-                    <input 
-                      required type="number" name="balance" value={formData.balance} onChange={handleInputChange}
-                      className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 focus:ring-2 focus:ring-primary-500/50 outline-none transition-all"
-                    />
-                  </div>
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-sm text-slate-400">Email Address</label>
-                  <input 
-                    type="email" name="email" value={formData.email} onChange={handleInputChange}
-                    className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 focus:ring-2 focus:ring-primary-500/50 outline-none transition-all"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-sm text-slate-400">Address</label>
-                  <textarea 
-                    name="address" value={formData.address} onChange={handleInputChange}
-                    className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 focus:ring-2 focus:ring-primary-500/50 outline-none transition-all h-20"
-                  />
                 </div>
                 <div className="flex gap-4 pt-4">
                   <button 
                     type="button" 
-                    onClick={() => setShowModal(false)}
-                    className="flex-1 px-6 py-2.5 rounded-xl border border-slate-800 hover:bg-slate-800 transition-all font-semibold"
+                    onClick={() => setIsModalOpen(false)}
+                    className="flex-1 px-6 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 font-bold transition-all"
                   >
                     Cancel
                   </button>
                   <button 
-                    type="submit"
-                    className="flex-1 bg-primary-600 hover:bg-primary-500 text-white px-6 py-2.5 rounded-xl font-bold transition-all shadow-lg shadow-primary-500/20"
+                    type="submit" 
+                    className="flex-1 px-6 py-3 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold transition-all shadow-lg shadow-sky-900/20"
                   >
-                    {editingCustomer ? 'Save Changes' : 'Create Record'}
+                    {editingCustomer ? 'Save Changes' : 'Add Record'}
                   </button>
                 </div>
               </form>
@@ -333,32 +530,4 @@ const App = () => {
       </AnimatePresence>
     </div>
   );
-};
-
-const NavItem = ({ icon, label, active = false }) => (
-  <button className={`flex items-center gap-3 w-full px-4 py-3 rounded-xl transition-all ${
-    active ? 'bg-primary-500/10 text-primary-400' : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200'
-  }`}>
-    {icon}
-    <span className="font-medium">{label}</span>
-  </button>
-);
-
-const StatCard = ({ title, value, icon, trend }) => (
-  <div className="glass-card p-6 rounded-2xl">
-    <div className="flex justify-between items-start mb-4">
-      <div className="p-3 bg-slate-900/50 rounded-xl border border-slate-800">
-        {React.cloneElement(icon, { size: 24 })}
-      </div>
-      <span className={`text-xs font-medium px-2 py-1 rounded-full ${
-        trend.startsWith('+') ? 'bg-emerald-500/10 text-emerald-400' : 'bg-slate-500/10 text-slate-400'
-      }`}>
-        {trend}
-      </span>
-    </div>
-    <div className="text-slate-400 text-sm font-medium mb-1">{title}</div>
-    <div className="text-2xl font-bold text-white tracking-tight">{value}</div>
-  </div>
-);
-
-export default App;
+}
