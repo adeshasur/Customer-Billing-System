@@ -37,36 +37,42 @@ The GUI is designed with a **State-of-the-Art** look:
 ### 🖥️ Desktop App (GUI)
 
 1. Navigate to the `gui` folder:
-    ```bash
-    cd gui
-    ```
+
+   ```bash
+   cd gui
+   ```
 
 2. Install dependencies:
-    ```bash
-    npm install
-    ```
+
+   ```bash
+   npm install
+   ```
 
 3. Start in development mode:
-    ```bash
-    npm run electron:dev
-    ```
+
+   ```bash
+   npm run electron:dev
+   ```
 
 4. Build the standalone `.exe`:
-    ```bash
-    npm run electron:build
-    ```
+
+   ```bash
+   npm run electron:build
+   ```
 
 ### 📟 Console Version (C)
 
 1. Compile using GCC:
-    ```bash
-    gcc customer.c -o customer.exe
-    ```
+
+   ```bash
+   gcc customer.c -o customer.exe
+   ```
 
 2. Run the executable:
-    ```bash
-    ./customer.exe
-    ```
+
+   ```bash
+   ./customer.exe
+   ```
 
 ---
 
